@@ -1,0 +1,155 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculador de Topes - Martín</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #121212; background-image: url('https://images.unsplash.com/photo-1598520106830-8c45c2f3f960?q=80&w=1000&auto=format&fit=crop'); background-size: cover; background-position: center; background-attachment: fixed; color: white; padding: 10px; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { max-width: 550px; width: 95%; background: rgba(25, 25, 25, 0.97); padding: 25px; border-radius: 20px; border: 1px solid rgba(255, 172, 28, 0.5); box-shadow: 0 15px 50px rgba(0,0,0,0.9); backdrop-filter: blur(10px); }
+        h2 { text-align: center; color: #ffac1c; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; font-size: 18px; letter-spacing: 1px; }
+        .selector-plegados { display: flex; justify-content: space-around; margin-bottom: 20px; background: #1a1a1a; padding: 5px; border-radius: 12px; border: 1px solid #444; }
+        .opcion { text-align: center; cursor: pointer; opacity: 0.5; transition: 0.2s; flex: 1; font-size: 12px; padding: 10px 0; border-radius: 8px; }
+        .opcion.active { opacity: 1; color: #121212; background: #ffac1c; font-weight: bold; }
+        .preview-svg { background: #000; border-radius: 12px; margin-bottom: 20px; display: flex; flex-direction: column; justify-content: center; padding: 15px; border: 1px solid #ffac1c; min-height: 120px; align-items: center; cursor: pointer; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        label { display: block; font-size: 10px; margin-bottom: 4px; color: #aaa; text-transform: uppercase; font-weight: bold; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #444; background: #111; color: white; font-size: 15px; box-sizing: border-box; outline: none; text-align: center; }
+        .c-1 { border-color: #ff4d4d !important; } .c-2 { border-color: #4d94ff !important; } .c-3 { border-color: #55ff55 !important; } .c-4 { border-color: #ffffff !important; } .c-5 { border-color: #ff55ff !important; } .c-6 { border-color: #ffff55 !important; } .c-7 { border-color: #4dffff !important; }
+        .btn-calc { width: 100%; padding: 18px; background: #ffac1c; color: #121212; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        .resultado { margin-top: 20px; background: #050505; padding: 20px; border-radius: 15px; border: 2px solid #ffac1c; display: none; }
+        .res-grid-main { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-bottom: 1px solid #222; padding-bottom: 15px; margin-bottom: 15px; }
+        .val { font-weight: 900; color: #ffac1c; font-size: 28px; display: block; }
+        .topes-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .col-tope { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px; }
+        .col-title { font-size: 9px; color: #ffac1c; text-align: center; display: block; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .tope-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>CALCULADOR DE TOPES - MARTÍN</h2>
+
+    <div class="selector-plegados">
+        <div id="sel1" class="opcion active" onclick="setPlegados(1)">1p</div>
+        <div id="sel2" class="opcion" onclick="setPlegados(2)">2p</div>
+        <div id="sel3" class="opcion" onclick="setPlegados(3)">3p</div>
+        <div id="sel4" class="opcion" onclick="setPlegados(4)">4p</div>
+        <div id="sel5" class="opcion" onclick="setPlegados(5)">5p</div>
+        <div id="sel6" class="opcion" onclick="setPlegados(6)">6p</div>
+    </div>
+
+    <div class="preview-svg" id="svg-container">
+        <div id="draw-area"></div>
+    </div>
+
+    <div class="grid-inputs" id="input-container"></div>
+
+    <div class="grid-inputs">
+        <div><label>ESPESOR (MM)</label><input type="number" id="espesor" value="6"></div>
+        <div><label>MATRIZ V</label><input type="number" id="matrizV" value="40"></div>
+    </div>
+    <div style="margin-bottom: 15px;"><label>LARGO PIEZA (MM)</label><input type="number" id="largoPieza" placeholder="2000" style="border-color: #ffac1c;"></div>
+
+    <button class="btn-calc" onclick="procesar()">CALCULAR</button>
+
+    <div id="resultadoBox" class="resultado">
+        <div class="res-grid-main">
+            <div class="res-block">
+                <span style="font-size: 10px; color: #888;">DESARROLLO</span>
+                <span class="val"><span id="resDes">0</span><span style="font-size:12px"> MM</span></span>
+            </div>
+            <div class="res-block">
+                <span style="font-size: 10px; color: #888;">PESO TOTAL</span>
+                <span class="val" style="color: #55ff55;"><span id="resPeso">0</span><span style="font-size:12px"> KG</span></span>
+            </div>
+        </div>
+        <div class="topes-container">
+            <div class="col-tope"><span class="col-title">DESDE ALA 1</span><div id="listaTopesIzq"></div></div>
+            <div class="col-tope"><span class="col-title">DESDE ÚLTIMA ALA</span><div id="listaTopesDer"></div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cantP = 1;
+    const colors = ["#ff4d4d", "#4d94ff", "#55ff55", "#ffffff", "#ff55ff", "#ffff55", "#4dffff"];
+    const labels = ["ALA 1", "ALA 2", "ALA 3", "ALA 4", "ALA 5", "ALA 6", "ALA 7"];
+
+    const galeriaFormas = [
+        { n: 1, pts: [[50,20],[50,60],[90,60]] },
+        { n: 2, pts: [[30,20],[30,60],[110,60],[110,20]] },
+        { n: 3, pts: [[20,60],[60,60],[60,30],[100,30],[100,10]] },
+        { n: 4, pts: [[20,30],[45,30],[45,65],[95,65],[95,30],[120,30]] },
+        { n: 5, pts: [[20,60],[40,60],[40,30],[70,30],[70,60],[100,60],[100,30]] },
+        { n: 6, pts: [[15,55],[15,35],[40,35],[40,65],[100,65],[100,35],[125,35],[125,55]] }
+    ];
+
+    function setPlegados(n) {
+        cantP = n;
+        for(let i=1; i<=6; i++) document.getElementById('sel'+i).classList.toggle('active', i === n);
+        renderInputs();
+        draw();
+    }
+
+    function draw() {
+        const area = document.getElementById('draw-area');
+        const f = galeriaFormas.find(x => x.n === cantP);
+        let svg = `<svg viewBox="0 0 140 80" width="180" height="100" stroke-width="6" fill="none" stroke-linecap="round">`;
+        for(let i=0; i < f.pts.length - 1; i++) {
+            svg += `<line x1="${f.pts[i][0]}" y1="${f.pts[i][1]}" x2="${f.pts[i+1][0]}" y2="${f.pts[i+1][1]}" stroke="${colors[i]}"/>`;
+        }
+        area.innerHTML = svg + `</svg>`;
+    }
+
+    function renderInputs() {
+        const cont = document.getElementById('input-container');
+        cont.innerHTML = "";
+        for (let i = 0; i <= cantP; i++) {
+            cont.innerHTML += `<div><label id="lbl${i}">${labels[i]}</label><input type="number" id="m${i}" class="c-${i+1}" placeholder="0"></div>`;
+        }
+        for (let i = 0; i <= cantP; i++) {
+            document.getElementById(`lbl${i}`).style.color = colors[i];
+        }
+    }
+
+    function procesar() {
+        let alas = [];
+        let suma = 0;
+        for(let i=0; i <= cantP; i++) {
+            let v = parseFloat(document.getElementById(`m${i}`).value) || 0;
+            alas.push(v);
+            suma += v;
+        }
+        const t = parseFloat(document.getElementById('espesor').value) || 0;
+        const largo = parseFloat(document.getElementById('largoPieza').value) || 0;
+        
+        const BD = (2*(t+t)) - ((Math.PI/2)*(t+(0.448*t)));
+        const desarrolloTotal = suma - (cantP * BD);
+        const peso = (desarrolloTotal * largo * t * 7.85) / 1000000;
+
+        document.getElementById('resDes').innerText = desarrolloTotal.toFixed(2);
+        document.getElementById('resPeso').innerText = peso.toFixed(2);
+        
+        const lizq = document.getElementById('listaTopesIzq');
+        const lder = document.getElementById('listaTopesDer');
+        lizq.innerHTML = ""; lder.innerHTML = "";
+        
+        for(let i=0; i < cantP; i++) {
+            let tP = alas[i] - (BD / 2);
+            lizq.innerHTML += `<div class="tope-item"><span style="color:${colors[i]}">P${i+1}</span> <b>${tP.toFixed(2)}</b></div>`;
+        }
+        let ar = [...alas].reverse();
+        let cr = [...colors.slice(0, cantP + 1)].reverse();
+        for(let i=0; i < cantP; i++) {
+            let tP = ar[i] - (BD / 2);
+            lder.innerHTML += `<div class="tope-item"><span style="color:${cr[i]}">P${cantP-i}</span> <b>${tP.toFixed(2)}</b></div>`;
+        }
+        document.getElementById('resultadoBox').style.display = 'block';
+    }
+
+    setPlegados(1);
+</script>
+</body>
+</html>
