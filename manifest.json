@@ -1,21 +1,17 @@
-﻿{
-  "name": "Sistema de Registro Seccional 11",
-  "short_name": "S11 Registros",
-  "description": "Sistema de identificación y plegados",
-  "start_url": "tu_archivo.html",
-  "display": "standalone",
-  "background_color": "#050505",
-  "theme_color": "#003366",
+{
+  "short_name": "PlegadoPro",
+  "name": "PlegadoPro - Calculadora de Plegados",
   "icons": [
     {
-      "src": "logo.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "logo-512.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/2329/2329158.png",
+      "type": "image/png",
       "sizes": "512x512",
-      "type": "image/png"
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "start_url": "./index.html",
+  "background_color": "#0a0a0a",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#003366"
 }
