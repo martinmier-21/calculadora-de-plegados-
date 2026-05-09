@@ -138,16 +138,6 @@
         .tope-lbl { display: flex; align-items: center; gap: 4px; }
         .tope-dot { width: 8px; height: 8px; border-radius: 50%; }
         .tope-val { font-weight: 700; }
-        .history { margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 11px; padding: 12px; }
-        .hist-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .hist-list { display: flex; flex-direction: column; gap: 5px; max-height: 110px; overflow-y: auto; }
-        .hist-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 10px; background: rgba(255,255,255,0.05);
-            border-radius: 7px; font-size: 11px; cursor: pointer;
-        }
-        .hist-item:active { background: #ffac1c; color: #121212; }
-        .hist-time { color: #aaa; font-size: 10px; }
         .toast {
             position: fixed; bottom: 18px; left: 50%;
             transform: translateX(-50%) translateY(100px);
@@ -159,6 +149,7 @@
         .toast.show { transform: translateX(-50%) translateY(0); }
         .toast.ok { border-left: 4px solid #55ff55; }
         .toast.err { border-left: 4px solid #ff4d4d; }
+        .toast.warn { border-left: 4px solid #ffac1c; }
         .modal {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.7); display: none;
@@ -234,6 +225,8 @@
             <button class="sel-btn" data-n="4">4P</button>
             <button class="sel-btn" data-n="5">5P</button>
             <button class="sel-btn" data-n="6">6P</button>
+            <button class="sel-btn" data-n="7">7P</button>
+            <button class="sel-btn" data-n="8">8P</button>
         </div>
         
         <div class="preview">
@@ -265,7 +258,7 @@
             <div class="inp-group">
                 <label class="inp-label">🔩 MATERIAL</label>
                 <select id="material" class="inp">
-                    <option value="7.85" selected>Acero al carbono</option>
+                    <option value="7.85">Acero</option>
                     <option value="2.70">Aluminio</option>
                     <option value="7.93">Inox</option>
                     <option value="8.96">Cobre</option>
@@ -273,7 +266,7 @@
             </div>
             <div class="inp-group">
                 <label class="inp-label">🔧 FACTOR K</label>
-                <input type="number" id="factorK" class="inp" value="0.440" min="0.3" max="0.5" step="0.001">
+                <input type="number" id="factorK" class="inp" value="0.448" min="0.3" max="0.5" step="0.001">
             </div>
         </div>
         
@@ -309,14 +302,6 @@
             </div>
         </div>
         
-        <div class="history">
-            <div class="hist-head">
-                <div class="section" style="margin:0">🕐 HISTORIAL</div>
-                <button class="res-btn" id="btnLimpiarHist" style="padding:3px 6px;font-size:9px">🗑️</button>
-            </div>
-            <div class="hist-list" id="histList"></div>
-        </div>
-        
         <button class="btn-plasma" id="btnIrPlasma">🔥 PARÁMETROS PLASMA</button>
     </div>
 </div>
@@ -327,20 +312,31 @@
     <div style="background-image: url('https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?q=80&w=1000&auto=format&fit=crop'); background-size: cover; background-position: center; background-attachment: fixed; color: white; padding: 10px; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
         <div style="max-width: 450px; width: 95%; background: rgba(25, 25, 25, 0.94); padding: 25px; border-radius: 20px; border: 1px solid #ffac1c; box-shadow: 0 15px 50px rgba(0,0,0,0.8); backdrop-filter: blur(10px);">
             <h2 style="text-align: center; color: #ffac1c; margin-top: 0; margin-bottom: 5px; text-transform: uppercase; font-size: 18px;">CNC PLASMA PARÁMETROS</h2>
-            <h3 style="text-align: center; color: #888; margin-top: 0; margin-bottom: 25px; font-size: 12px; letter-spacing: 2px;">POWERMAX 105 SYNC</h3>
+            <h3 style="text-align: center; color: #888; margin-top: 0; margin-bottom: 15px; font-size: 12px; letter-spacing: 2px;">POWERMAX SYNC</h3>
+            
+            <!-- SELECTOR DE AMPERAJE -->
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 11px; margin-bottom: 8px; color: #aaa; text-transform: uppercase; text-align: center;">Cartucho / Amperaje</label>
+                <select id="amperaje" onchange="actualizar()" style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #444; background: #121212; color: #ffac1c; font-size: 16px; font-weight: bold; text-align: center; outline: none; cursor: pointer;">
+                    <option value="45">45A (FineCut)</option>
+                    <option value="65">65A</option>
+                    <option value="85">85A</option>
+                    <option value="105" selected>105A</option>
+                </select>
+            </div>
+            
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-size: 11px; margin-bottom: 8px; color: #aaa; text-transform: uppercase; text-align: center;">Selecciona Espesor / Calibre</label>
-                <!-- ✅ SECCIÓN ACTUALIZADA CON CALIBRES PRECISOS -->
                 <select id="espesor" onchange="actualizar()" style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #444; background: #121212; color: #ffac1c; font-size: 18px; font-weight: bold; text-align: center; outline: none; cursor: pointer;">
                     <option value="">-- ELIGE ESPESOR --</option>
-                    <optgroup label="Chapa Fina (Calibres)">
+                    <optgroup label="Chapa Fina">
                         <option value="1.5">Cal 16 (1.50 mm)</option>
                         <option value="2.0">Cal 14 (2.00 mm)</option>
                         <option value="2.38">Cal 13 (2.38 mm)</option>
                         <option value="2.78">Cal 12 (2.78 mm)</option>
                         <option value="3.175">3.175 mm (1/8")</option>
                     </optgroup>
-                    <optgroup label="Planchuelas / Vigas (Pulgadas)">
+                    <optgroup label="Planchuelas / Vigas">
                         <option value="4.76">4.76 mm (3/16")</option>
                         <option value="6.35">6.35 mm (1/4")</option>
                         <option value="7.94">7.94 mm (5/16")</option>
@@ -352,6 +348,7 @@
                     </optgroup>
                 </select>
             </div>
+            
             <div id="resultado" style="display: none; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;">
                 <div style="background: rgba(40, 40, 40, 0.8); padding: 15px; border-radius: 12px; border: 1px solid #444; text-align: center;">
                     <span style="font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 5px; display: block;">Amperaje</span>
@@ -379,10 +376,9 @@
                 </div>
             </div>
             <div style="margin-top: 20px; font-size: 10px; color: #888; text-align: center; border-top: 1px solid #333; padding-top: 15px; font-style: italic;">
-                Verifica el estado del cartucho de 105A antes de espesores > 12mm.<br>
+                Verifica el estado del cartucho antes de cortar.<br>
                 Mantén la trampa de aire vacía para evitar fallos.
             </div>
-            <!-- ✅ NUEVO BOTÓN PARA VOLVER -->
             <button class="btn-calc" id="btnVolverTopes2" style="margin-top: 20px; background: #444; color: #fff;">⬅️ VOLVER A PLEGADOS</button>
         </div>
     </div>
@@ -408,31 +404,30 @@
 
 <script>
 // ===== DATOS TOPES PRO =====
-const colors = ['#ff4d4d','#4d94ff','#55ff55','#ffffff','#ff55ff','#ffff55','#4dffff'];
-const labels = ['ALA 1','ALA 2','ALA 3','ALA 4','ALA 5','ALA 6','ALA 7'];
+const colors = ['#ff4d4d','#4d94ff','#55ff55','#ffffff','#ff55ff','#ffff55','#4dffff', '#ff884d', '#884dff'];
+const labels = ['ALA 1','ALA 2','ALA 3','ALA 4','ALA 5','ALA 6','ALA 7', 'ALA 8', 'ALA 9'];
 const shapes = [
     {n:1, pts:[[40,20],[40,60],[90,60]], lbls:['A1','A2']},
     {n:2, pts:[[25,20],[25,60],[115,60],[115,20]], lbls:['A1','A2','A3']},
     {n:3, pts:[[20,60],[55,60],[55,30],[95,30],[95,15]], lbls:['A1','A2','A3','A4']},
     {n:4, pts:[[15,30],[40,30],[40,65],[95,65],[95,30],[120,30]], lbls:['A1','A2','A3','A4','A5']},
     {n:5, pts:[[15,60],[35,60],[35,30],[65,30],[65,60],[95,60],[95,30]], lbls:['A1','A2','A3','A4','A5','A6']},
-    {n:6, pts:[[12,55],[12,35],[38,35],[38,65],[102,65],[102,35],[128,35],[128,55]], lbls:['A1','A2','A3','A4','A5','A6','A7']}
+    {n:6, pts:[[12,55],[12,35],[38,35],[38,65],[102,65],[102,35],[128,35],[128,55]], lbls:['A1','A2','A3','A4','A5','A6','A7']},
+    {n:7, pts:[[10,55],[10,35],[30,35],[30,65],[54,65],[54,35],[78,35],[78,65],[102,65]], lbls:['A1','A2','A3','A4','A5','A6','A7','A8']},
+    {n:8, pts:[[8,50],[8,30],[24,30],[24,70],[44,70],[44,30],[64,30],[64,70],[84,70],[84,50]], lbls:['A1','A2','A3','A4','A5','A6','A7','A8','A9']}
 ];
 
 const materialConfig = {
-    "7.85":  { name: "Acero al carbono", k: 0.44 },
+    "7.85":  { name: "Acero", k: 0.448 },
     "2.70":  { name: "Aluminio", k: 0.350 },
     "7.93":  { name: "Inox", k: 0.480 },
     "8.96":  { name: "Cobre", k: 0.380 }
 };
 
 let plegados = 1;
-let history = [];
 let presets = {};
 
 try {
-    const h = localStorage.getItem('topesHist');
-    if(h) history = JSON.parse(h);
     const p = localStorage.getItem('topesPres');
     if(p) presets = JSON.parse(p);
 } catch(e) {}
@@ -443,58 +438,45 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initTopes() {
-    // Plegados selector
     document.querySelectorAll('#selPlegados .sel-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             setPlegados(parseInt(this.dataset.n));
         });
     });
     
-    // Botones
     document.getElementById('btnCalc').addEventListener('click', calcular);
     document.getElementById('btnCopiar').addEventListener('click', copiar);
     document.getElementById('btnCompartir').addEventListener('click', compartir);
-    document.getElementById('btnLimpiarHist').addEventListener('click', limpiarHistorial);
     document.getElementById('btnPresets').addEventListener('click', openPresets);
     document.getElementById('btnClosePresets').addEventListener('click', () => closeModal('modalPresets'));
     document.getElementById('btnGuardarPreset').addEventListener('click', guardarPreset);
     
-    // Material -> K sync
     document.getElementById('material').addEventListener('change', function() {
         const dens = this.value;
-        const kFactor = materialConfig[dens]?.k || 0.44;
+        const kFactor = materialConfig[dens]?.k || 0.448;
         document.getElementById('factorK').value = kFactor.toFixed(3);
     });
     
-    // Modal click outside
     document.getElementById('modalPresets').addEventListener('click', function(e) {
         if(e.target === this) closeModal('modalPresets');
     });
     
-    // Navegación
     document.getElementById('btnIrPlasma').addEventListener('click', () => {
         document.getElementById('viewTopes').style.display = 'none';
         document.getElementById('viewPlasma').style.display = 'block';
     });
+    document.getElementById('btnVolverTopes').addEventListener('click', volverTopes);
+    document.getElementById('btnVolverTopes2').addEventListener('click', volverTopes);
     
-    // ✅ BOTÓN VOLVER ARRIBA
-    document.getElementById('btnVolverTopes').addEventListener('click', () => {
-        document.getElementById('viewPlasma').style.display = 'none';
-        document.getElementById('viewTopes').style.display = 'block';
-    });
-
-    // ✅ BOTÓN VOLVER ABAJO (NUEVO)
-    document.getElementById('btnVolverTopes2').addEventListener('click', () => {
-        document.getElementById('viewPlasma').style.display = 'none';
-        document.getElementById('viewTopes').style.display = 'block';
-    });
-    
-    // Init K fijo en 0.440
     const densDefault = document.getElementById('material').value;
-    document.getElementById('factorK').value = (materialConfig[densDefault]?.k || 0.44).toFixed(3);
+    document.getElementById('factorK').value = (materialConfig[densDefault]?.k || 0.448).toFixed(3);
     
     setPlegados(1);
-    renderHistorial();
+}
+
+function volverTopes() {
+    document.getElementById('viewPlasma').style.display = 'none';
+    document.getElementById('viewTopes').style.display = 'block';
 }
 
 function setPlegados(n) {
@@ -545,20 +527,18 @@ function calcular() {
     const t = parseFloat(document.getElementById('tEspesor').value) || 0;
     const V = parseFloat(document.getElementById('matrizV').value) || 40;
     const largo = parseFloat(document.getElementById('largoPieza').value) || 0;
-    const K = parseFloat(document.getElementById('factorK').value) || 0.44;
+    const K = parseFloat(document.getElementById('factorK').value) || 0.448;
     const dens = parseFloat(document.getElementById('material').value) || 7.85;
     
     if(t <= 0 || suma <= 0) { toast('⚠️ Ingresa valores válidos', 'err'); return; }
     
-    // ✅ FÓRMULA CORREGIDA CON RADIO REAL (t)
-    const R = t; 
+    const R = t;
     const NA = t * K;
     const ang = Math.PI / 2;
     
     const OSSB = (R + t) * Math.tan(ang / 2);
     const BA = ang * (R + NA);
     const BD = (2 * OSSB) - BA;
-    
     const des = suma - (plegados * BD);
     const peso = (des * largo * t * dens) / 1000000;
     
@@ -586,63 +566,10 @@ function calcular() {
     }
     
     document.getElementById('results').style.display = 'block';
-    guardarHistorial({t, alas, des, peso, dens, plegados, k: K});
     toast('✅ Calculado', 'ok');
 }
 
-function guardarHistorial(d) {
-    history.unshift({ts: Date.now(), ...d});
-    if(history.length > 20) history.pop();
-    try { localStorage.setItem('topesHist', JSON.stringify(history)); } catch(e) {}
-    renderHistorial();
-}
-
-function renderHistorial() {
-    const l = document.getElementById('histList');
-    if(history.length === 0) {
-        l.innerHTML = '<div style="color:#aaa;text-align:center;padding:10px;font-size:11px">Sin cálculos</div>';
-        return;
-    }
-    let html = '';
-    for(let i = 0; i < history.length; i++) {
-        const h = history[i];
-        const date = new Date(h.ts);
-        const tm = date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2,'0');
-        const matName = materialConfig[h.dens]?.name || 'Acero al carbono';
-        html += '<div class="hist-item" data-idx="' + i + '">' +
-            '<div><div style="font-weight:600">' + h.plegados + 'P • ' + matName + '</div>' +
-            '<div style="color:#aaa;font-size:10px">' + h.des.toFixed(1) + 'mm • ' + h.peso.toFixed(2) + 'kg</div></div>' +
-            '<span class="hist-time">' + tm + '</span></div>';
-    }
-    l.innerHTML = html;
-    l.querySelectorAll('.hist-item').forEach(item => {
-        item.addEventListener('click', function() { cargarHistorial(parseInt(this.dataset.idx)); });
-    });
-}
-
-function cargarHistorial(i) {
-    const h = history[i]; if(!h) return;
-    setPlegados(h.plegados);
-    document.getElementById('tEspesor').value = h.t;
-    document.getElementById('material').value = h.dens;
-    document.getElementById('factorK').value = (h.k || 0.44).toFixed(3);
-    for(let j = 0; j <= h.plegados; j++) {
-        const inp = document.getElementById('m' + j);
-        if(inp && h.alas[j] !== undefined) inp.value = h.alas[j];
-    }
-    calcular();
-    toast('📋 Cargado', 'ok');
-}
-
-function limpiarHistorial() {
-    if(confirm('¿Borrar historial?')) {
-        history = [];
-        try { localStorage.removeItem('topesHist'); } catch(e) {}
-        renderHistorial();
-        toast('🗑️ Limpiado', 'ok');
-    }
-}
-
+// ===== FUNCIONES DE PRESETS =====
 function openPresets() {
     const l = document.getElementById('presetList');
     const keys = Object.keys(presets);
@@ -653,10 +580,10 @@ function openPresets() {
         for(let i = 0; i < keys.length; i++) {
             const nom = keys[i];
             const p = presets[nom];
-            const matName = materialConfig[p.dens]?.name || 'Acero al carbono';
+            const matName = materialConfig[p.dens]?.name || 'Acero';
             html += '<div class="preset-item" data-nom="' + nom + '">' +
                 '<div class="preset-name">' + nom + '</div>' +
-                '<div style="font-size:10px;color:#aaa">' + matName + ' • K:' + (p.k||0.44).toFixed(3) + '</div>' +
+                '<div style="font-size:10px;color:#aaa">' + matName + ' • K:' + (p.k||0.448).toFixed(3) + '</div>' +
                 '<button class="preset-del" data-nom="' + nom + '">🗑️</button></div>';
         }
         l.innerHTML = html;
@@ -684,7 +611,7 @@ function guardarPreset() {
         plegados: plegados, alas: alas,
         t: parseFloat(document.getElementById('tEspesor').value) || 0,
         V: parseFloat(document.getElementById('matrizV').value) || 40,
-        K: parseFloat(document.getElementById('factorK').value) || 0.44,
+        K: parseFloat(document.getElementById('factorK').value) || 0.448,
         dens: parseFloat(document.getElementById('material').value) || 7.85
     };
     try { localStorage.setItem('topesPres', JSON.stringify(presets)); } catch(e) {}
@@ -720,10 +647,10 @@ function borrarPreset(nom) {
 
 function toast(msg, tipo) {
     const t = document.getElementById('toast');
-    document.getElementById('toastIcon').textContent = tipo === 'ok' ? '✓' : '⚠';
+    document.getElementById('toastIcon').textContent = tipo === 'ok' ? '✓' : (tipo === 'err' ? '⚠️' : '⚡');
     document.getElementById('toastMsg').textContent = msg;
     t.className = 'toast ' + tipo + ' show';
-    setTimeout(function() { t.classList.remove('show'); }, 2500);
+    setTimeout(function() { t.classList.remove('show'); }, 3500);
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
@@ -731,7 +658,7 @@ function closeModal(id) { document.getElementById(id).classList.remove('show'); 
 function copiar() {
     const des = document.getElementById('resDes').textContent;
     const peso = document.getElementById('resPeso').textContent;
-    const mat = materialConfig[document.getElementById('material').value]?.name || 'Acero al carbono';
+    const mat = materialConfig[document.getElementById('material').value]?.name || 'Acero';
     const k = document.getElementById('factorK').value;
     const txt = 'Topes Pro - Resultados\nMaterial: ' + mat + ' (K:' + k + ')\nDesarrollo: ' + des + 'mm\nPeso: ' + peso + 'kg';
     if(navigator.clipboard) {
@@ -746,34 +673,113 @@ function copiar() {
 function compartir() {
     const des = document.getElementById('resDes').textContent;
     const peso = document.getElementById('resPeso').textContent;
-    const mat = materialConfig[document.getElementById('material').value]?.name || 'Acero al carbono';
+    const mat = materialConfig[document.getElementById('material').value]?.name || 'Acero';
     const txt = '🔧 Topes Pro\n🔩 ' + mat + '\n📐 ' + des + 'mm\n⚖️ ' + peso + 'kg';
     if(navigator.share) { navigator.share({title:'Topes Pro', text:txt}).catch(() => copiar()); }
     else { copiar(); }
 }
 
-// ===== PLASMA (CÓDIGO ORIGINAL) =====
-const tabla = {
-    "1.5": { amp: 45,  vel: 6000, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.0 },
-    "2.0": { amp: 45,  vel: 4800, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.1 },
-    "2.38": { amp: 45,  vel: 4500, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.1 },
-    "2.78": { amp: 45,  vel: 4200, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.1 },
-    "3.175": { amp: 45,  vel: 3600, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.1 },
-    "4.76": { amp: 65,  vel: 3200, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.3 },
-    "6.35": { amp: 65,  vel: 2200, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.5 },
-    "7.94": { amp: 85,  vel: 2100, h_p: 4.5, h_c: 1.5, aire: 80, delay: 0.6 },
-    "9.53": { amp: 85,  vel: 1600, h_p: 4.5, h_c: 1.5, aire: 80, delay: 0.7 },
-    "12.7": { amp: 105, vel: 2000, h_p: 4.5, h_c: 1.5, aire: 85, delay: 0.8 },
-    "15.88": { amp: 105, vel: 1300, h_p: 5.0, h_c: 1.5, aire: 85, delay: 1.0 },
-    "19.05": { amp: 105, vel: 900,  h_p: 5.5, h_c: 1.5, aire: 85, delay: 1.2 },
-    "25.4": { amp: 105, vel: 550,  h_p: 6.0, h_c: 1.5, aire: 85, delay: 2.0 }
+// ===== PLASMA - CONFIGURACIÓN EXPERTA =====
+
+// ✅ Límites de espesor por cartucho (rango recomendado)
+const cartuchoConfig = {
+    "45": { min: 0.5, max: 6, name: "45A (FineCut)", optimal: true },
+    "65": { min: 0.8, max: 10, name: "65A", optimal: true },
+    "85": { min: 1.0, max: 15, name: "85A", optimal: true },
+    "105": { min: 1.5, max: 25, name: "105A", optimal: true }
 };
 
+// ✅ Tabla de parámetros EXTENDIDA (incluye chapa fina en todos los cartuchos)
+const tablaPlasma = {
+    "45": {
+        "1.5": { amp: 45, vel: 6000, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.0 },
+        "2.0": { amp: 45, vel: 4800, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.1 },
+        "2.38": { amp: 45, vel: 4500, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.1 },
+        "2.78": { amp: 45, vel: 4200, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.1 },
+        "3.175": { amp: 45, vel: 3600, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.1 },
+        "4.76": { amp: 45, vel: 2800, h_p: 4.0, h_c: 1.5, aire: 75, delay: 0.3 },
+        "6.35": { amp: 45, vel: 2000, h_p: 4.0, h_c: 1.5, aire: 75, delay: 0.5 }
+    },
+    "65": {
+        "1.5": { amp: 65, vel: 7500, h_p: 3.5, h_c: 1.2, aire: 75, delay: 0.0 },
+        "2.0": { amp: 65, vel: 6000, h_p: 3.5, h_c: 1.2, aire: 75, delay: 0.1 },
+        "2.38": { amp: 65, vel: 5200, h_p: 3.5, h_c: 1.2, aire: 75, delay: 0.1 },
+        "2.78": { amp: 65, vel: 4800, h_p: 3.5, h_c: 1.2, aire: 75, delay: 0.1 },
+        "3.175": { amp: 65, vel: 4000, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.1 },
+        "4.76": { amp: 65, vel: 3200, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.3 },
+        "6.35": { amp: 65, vel: 2200, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.5 },
+        "7.94": { amp: 65, vel: 1900, h_p: 4.0, h_c: 1.5, aire: 80, delay: 0.6 },
+        "9.53": { amp: 65, vel: 1500, h_p: 4.0, h_c: 1.5, aire: 80, delay: 0.7 },
+        "10": { amp: 65, vel: 1400, h_p: 4.0, h_c: 1.5, aire: 80, delay: 0.7 }
+    },
+    "85": {
+        "1.5": { amp: 85, vel: 8500, h_p: 3.0, h_c: 1.0, aire: 80, delay: 0.0 },
+        "2.0": { amp: 85, vel: 7000, h_p: 3.0, h_c: 1.0, aire: 80, delay: 0.1 },
+        "2.38": { amp: 85, vel: 6200, h_p: 3.0, h_c: 1.0, aire: 80, delay: 0.1 },
+        "2.78": { amp: 85, vel: 5500, h_p: 3.5, h_c: 1.2, aire: 80, delay: 0.1 },
+        "3.175": { amp: 85, vel: 4800, h_p: 3.8, h_c: 1.5, aire: 80, delay: 0.1 },
+        "4.76": { amp: 85, vel: 3500, h_p: 4.0, h_c: 1.5, aire: 80, delay: 0.3 },
+        "6.35": { amp: 85, vel: 2800, h_p: 4.0, h_c: 1.5, aire: 80, delay: 0.5 },
+        "7.94": { amp: 85, vel: 2100, h_p: 4.5, h_c: 1.5, aire: 80, delay: 0.6 },
+        "9.53": { amp: 85, vel: 1600, h_p: 4.5, h_c: 1.5, aire: 80, delay: 0.7 },
+        "12.7": { amp: 85, vel: 1200, h_p: 4.5, h_c: 1.5, aire: 85, delay: 0.8 },
+        "15.88": { amp: 85, vel: 900, h_p: 5.0, h_c: 1.5, aire: 85, delay: 1.0 }
+    },
+    "105": {
+        "1.5": { amp: 105, vel: 9500, h_p: 2.8, h_c: 0.8, aire: 85, delay: 0.0 },
+        "2.0": { amp: 105, vel: 8000, h_p: 3.0, h_c: 1.0, aire: 85, delay: 0.1 },
+        "2.38": { amp: 105, vel: 7200, h_p: 3.0, h_c: 1.0, aire: 85, delay: 0.1 },
+        "2.78": { amp: 105, vel: 6500, h_p: 3.5, h_c: 1.2, aire: 85, delay: 0.1 },
+        "3.175": { amp: 105, vel: 5500, h_p: 3.8, h_c: 1.5, aire: 85, delay: 0.1 },
+        "4.76": { amp: 105, vel: 4000, h_p: 4.0, h_c: 1.5, aire: 85, delay: 0.3 },
+        "6.35": { amp: 105, vel: 3200, h_p: 4.0, h_c: 1.5, aire: 85, delay: 0.5 },
+        "7.94": { amp: 105, vel: 2400, h_p: 4.5, h_c: 1.5, aire: 85, delay: 0.6 },
+        "9.53": { amp: 105, vel: 2000, h_p: 4.5, h_c: 1.5, aire: 85, delay: 0.7 },
+        "12.7": { amp: 105, vel: 2000, h_p: 4.5, h_c: 1.5, aire: 85, delay: 0.8 },
+        "15.88": { amp: 105, vel: 1300, h_p: 5.0, h_c: 1.5, aire: 85, delay: 1.0 },
+        "19.05": { amp: 105, vel: 900, h_p: 5.5, h_c: 1.5, aire: 85, delay: 1.2 },
+        "25.4": { amp: 105, vel: 550, h_p: 6.0, h_c: 1.5, aire: 85, delay: 2.0 }
+    }
+};
+
+// ✅ Función de validación inteligente
+function validarEspesor(amp, espesor) {
+    const config = cartuchoConfig[amp];
+    if (!config) return null;
+    
+    const esp = parseFloat(espesor);
+    if (esp > config.max) {
+        return {
+            type: 'err',
+            msg: `⚠️ ESPESOR EXCESIVO: ${espesor}mm supera el máximo recomendado (${config.max}mm) para ${config.name}. Riesgo de mala calidad de corte.`
+        };
+    }
+    if (esp < config.min) {
+        return {
+            type: 'warn',
+            msg: `⚡ CHAPA MUY FINA: ${espesor}mm está por debajo del mínimo recomendado (${config.min}mm) para ${config.name}. Usar con precaución.`
+        };
+    }
+    return { type: 'ok', msg: null };
+}
+
+// ✅ Función actualizar con validación
 function actualizar() {
+    const amp = document.getElementById('amperaje').value;
     const esp = document.getElementById('espesor').value;
     const res = document.getElementById('resultado');
-    if (esp && tabla[esp]) {
-        const p = tabla[esp];
+    
+    if (!amp || !esp) {
+        res.style.display = 'none';
+        return;
+    }
+    
+    // Validar espesor vs cartucho
+    const validacion = validarEspesor(amp, esp);
+    
+    // Buscar parámetros
+    if (tablaPlasma[amp]?.[esp]) {
+        const p = tablaPlasma[amp][esp];
         document.getElementById('amp').innerText = p.amp;
         document.getElementById('vel').innerText = p.vel;
         document.getElementById('h_perf').innerText = p.h_p;
@@ -781,11 +787,21 @@ function actualizar() {
         document.getElementById('aire').innerText = p.aire;
         document.getElementById('delay').innerText = p.delay;
         res.style.display = 'grid';
+        
+        // Mostrar advertencia si corresponde
+        if (validacion && validacion.type !== 'ok') {
+            toast(validacion.msg, validacion.type);
+        }
     } else {
         res.style.display = 'none';
+        // Si no hay parámetros pero el espesor es válido, mostrar mensaje
+        if (validacion && validacion.type === 'err') {
+            toast(validacion.msg, 'err');
+        } else if (!tablaPlasma[amp]?.[esp]) {
+            toast('⚠️ Sin parámetros para esta combinación. Elegí otro espesor o cartucho.', 'warn');
+        }
     }
 }
 </script>
 </body>
 </html>
-
