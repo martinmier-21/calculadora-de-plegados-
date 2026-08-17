@@ -91,7 +91,7 @@
         .inp.c7 { border-color: #4dffff; } .inp.accent { border-color: #ffac1c; }
         select.inp {
             appearance: none;
-            background-image: url("image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23ffac1c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23ffac1c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: right 10px center; cursor: pointer;
         }
         .btn-calc {
@@ -200,7 +200,7 @@
         }
         #viewTopes { display: block; }
         #viewPlasma { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #121212; overflow-y: auto; }
-        
+
         @media (max-width: 480px) {
             .selector { grid-template-columns: repeat(3,1fr); }
             .inputs, .main-res, .topes { grid-template-columns: 1fr; }
@@ -215,7 +215,7 @@
         <h1>🔧 TOPES PRO</h1>
         <button class="header-btn" id="btnPresets" title="Guardar">💾</button>
     </div>
-    
+
     <div class="content">
         <div class="section">📐 PLEGADOS</div>
         <div class="selector" id="selPlegados">
@@ -228,15 +228,15 @@
             <button class="sel-btn" data-n="7">7P</button>
             <button class="sel-btn" data-n="8">8P</button>
         </div>
-        
+
         <div class="preview">
             <div id="svgPreview"></div>
             <div id="previewLabels" class="preview-labels"></div>
         </div>
-        
+
         <div class="section">📏 ALAS (mm)</div>
         <div class="inputs" id="alasInputs"></div>
-        
+
         <div class="section">⚙️ CONFIG</div>
         <div class="inputs">
             <div class="inp-group">
@@ -269,9 +269,9 @@
                 <input type="number" id="factorK" class="inp" value="0.448" min="0.3" max="0.5" step="0.001">
             </div>
         </div>
-        
+
         <button class="btn-calc" id="btnCalc">🧮 CALCULAR</button>
-        
+
         <div class="results" id="results">
             <div class="res-head">
                 <div class="res-title">✅ RESULTADOS</div>
@@ -301,7 +301,7 @@
                 </div>
             </div>
         </div>
-        
+
         <button class="btn-plasma" id="btnIrPlasma">🔥 PARÁMETROS PLASMA</button>
     </div>
 </div>
@@ -313,7 +313,7 @@
         <div style="max-width: 450px; width: 95%; background: rgba(25, 25, 25, 0.94); padding: 25px; border-radius: 20px; border: 1px solid #ffac1c; box-shadow: 0 15px 50px rgba(0,0,0,0.8); backdrop-filter: blur(10px);">
             <h2 style="text-align: center; color: #ffac1c; margin-top: 0; margin-bottom: 5px; text-transform: uppercase; font-size: 18px;">CNC PLASMA PARÁMETROS</h2>
             <h3 style="text-align: center; color: #888; margin-top: 0; margin-bottom: 15px; font-size: 12px; letter-spacing: 2px;">POWERMAX SYNC</h3>
-            
+
             <!-- SELECTOR DE AMPERAJE -->
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-size: 11px; margin-bottom: 8px; color: #aaa; text-transform: uppercase; text-align: center;">Cartucho / Amperaje</label>
@@ -324,7 +324,7 @@
                     <option value="105" selected>105A</option>
                 </select>
             </div>
-            
+
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-size: 11px; margin-bottom: 8px; color: #aaa; text-transform: uppercase; text-align: center;">Selecciona Espesor / Calibre</label>
                 <select id="espesor" onchange="actualizar()" style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #444; background: #121212; color: #ffac1c; font-size: 18px; font-weight: bold; text-align: center; outline: none; cursor: pointer;">
@@ -348,7 +348,7 @@
                     </optgroup>
                 </select>
             </div>
-            
+
             <div id="resultado" style="display: none; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;">
                 <div style="background: rgba(40, 40, 40, 0.8); padding: 15px; border-radius: 12px; border: 1px solid #444; text-align: center;">
                     <span style="font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 5px; display: block;">Amperaje</span>
@@ -443,34 +443,34 @@ function initTopes() {
             setPlegados(parseInt(this.dataset.n));
         });
     });
-    
+
     document.getElementById('btnCalc').addEventListener('click', calcular);
     document.getElementById('btnCopiar').addEventListener('click', copiar);
     document.getElementById('btnCompartir').addEventListener('click', compartir);
     document.getElementById('btnPresets').addEventListener('click', openPresets);
     document.getElementById('btnClosePresets').addEventListener('click', () => closeModal('modalPresets'));
     document.getElementById('btnGuardarPreset').addEventListener('click', guardarPreset);
-    
+
     document.getElementById('material').addEventListener('change', function() {
         const dens = this.value;
         const kFactor = materialConfig[dens]?.k || 0.448;
         document.getElementById('factorK').value = kFactor.toFixed(3);
     });
-    
+
     document.getElementById('modalPresets').addEventListener('click', function(e) {
         if(e.target === this) closeModal('modalPresets');
     });
-    
+
     document.getElementById('btnIrPlasma').addEventListener('click', () => {
         document.getElementById('viewTopes').style.display = 'none';
         document.getElementById('viewPlasma').style.display = 'block';
     });
     document.getElementById('btnVolverTopes').addEventListener('click', volverTopes);
     document.getElementById('btnVolverTopes2').addEventListener('click', volverTopes);
-    
+
     const densDefault = document.getElementById('material').value;
     document.getElementById('factorK').value = (materialConfig[densDefault]?.k || 0.448).toFixed(3);
-    
+
     setPlegados(1);
 }
 
@@ -507,7 +507,7 @@ function drawPreview() {
     for(let i = 0; i < sh.pts.length - 1; i++) {
         const [x1, y1] = sh.pts[i];
         const [x2, y2] = sh.pts[i+1];
-        svg += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + 
+        svg += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 +
                '" stroke="' + colors[i] + '" stroke-width="4" stroke-linecap="round"/>';
         svg += '<circle cx="' + x2 + '" cy="' + y2 + '" r="3" fill="' + colors[i] + '"/>';
     }
@@ -518,53 +518,68 @@ function drawPreview() {
 }
 
 function calcular() {
-    const alas = []; let suma = 0;
+    const alas = [];
     for(let i = 0; i <= plegados; i++) {
         const val = parseFloat(document.getElementById('m' + i).value);
         const v = isNaN(val) ? 0 : val;
-        alas.push(v); suma += v;
+        alas.push(v);
     }
     const t = parseFloat(document.getElementById('tEspesor').value) || 0;
     const V = parseFloat(document.getElementById('matrizV').value) || 40;
     const largo = parseFloat(document.getElementById('largoPieza').value) || 0;
     const K = parseFloat(document.getElementById('factorK').value) || 0.448;
     const dens = parseFloat(document.getElementById('material').value) || 7.85;
-    
-    if(t <= 0 || suma <= 0) { toast('⚠️ Ingresa valores válidos', 'err'); return; }
-    
-    const R = t;
-    const NA = t * K;
-    const ang = Math.PI / 2;
-    
+
+    if(t <= 0 || alas.every(a => a <= 0)) { toast('⚠️ Ingresa valores válidos para las alas y espesor', 'err'); return; }
+
+    // --- Cálculo del Desarrollo ---
+    const R = t; // Radio de plegado asumido como espesor
+    const NA = t * K; // Neutro del Acero
+    const ang = Math.PI / 2; // Ángulo de plegado (90 grados en radianes)
+
     const OSSB = (R + t) * Math.tan(ang / 2);
     const BA = ang * (R + NA);
     const BD = (2 * OSSB) - BA;
-    const des = suma - (plegados * BD);
+    let des = 0;
+    for(const ala of alas) {
+        des += ala;
+    }
+    des -= plegados * BD;
+
+    // --- Cálculo del Peso ---
     const peso = (des * largo * t * dens) / 1000000;
-    
+
     document.getElementById('resDes').textContent = des.toFixed(2);
     document.getElementById('resPeso').textContent = peso.toFixed(3);
-    
-    const izq = document.getElementById('topesIzq'); izq.innerHTML = '';
-    for(let i = 0; i < plegados; i++) {
-        let acum = 0; for(let j = 0; j <= i; j++) acum += alas[j];
-        const val = acum - ((i + 1) * BD / 2);
+
+    // --- Cálculo de Topes Corregido ---
+    const izq = document.getElementById('topesIzq');
+    const der = document.getElementById('topesDer');
+    izq.innerHTML = '';
+    der.innerHTML = '';
+
+    // Topes desde la primera ala (izquierda)
+    let posTopeIzq = 0;
+    for (let i = 0; i < plegados; i++) {
+        posTopeIzq += alas[i];
+        // El tope se coloca en la posición acumulada menos la mitad del ángulo de plegado (BD/2)
+        const val = posTopeIzq - BD / 2;
         izq.innerHTML += '<div class="tope-item">' +
             '<span class="tope-lbl"><span class="tope-dot" style="background:' + colors[i] + '"></span>P' + (i+1) + '</span>' +
             '<span class="tope-val">' + val.toFixed(2) + ' mm</span></div>';
     }
-    
-    const der = document.getElementById('topesDer'); der.innerHTML = '';
-    const rev = alas.slice().reverse();
-    for(let i = 0; i < plegados; i++) {
-        let acum = 0; for(let j = 0; j <= i; j++) acum += rev[j];
-        const val = acum - ((i + 1) * BD / 2);
-        const colIdx = plegados - 1 - i;
+
+    // Topes desde la última ala (derecha)
+    let posTopeDer = 0;
+    for (let i = plegados - 1; i >= 0; i--) {
+        posTopeDer += alas[i + 1]; // Sumamos la ala siguiente (hacia la derecha)
+        const val = posTopeDer - BD / 2;
+        const colIdx = i; // Color basado en el índice del plegado
         der.innerHTML += '<div class="tope-item">' +
-            '<span class="tope-lbl"><span class="tope-dot" style="background:' + colors[colIdx] + '"></span>P' + (plegados - i) + '</span>' +
+            '<span class="tope-lbl"><span class="tope-dot" style="background:' + colors[colIdx] + '"></span>P' + (i+1) + '</span>' +
             '<span class="tope-val">' + val.toFixed(2) + ' mm</span></div>';
     }
-    
+
     document.getElementById('results').style.display = 'block';
     toast('✅ Calculado', 'ok');
 }
@@ -746,7 +761,7 @@ const tablaPlasma = {
 function validarEspesor(amp, espesor) {
     const config = cartuchoConfig[amp];
     if (!config) return null;
-    
+
     const esp = parseFloat(espesor);
     if (esp > config.max) {
         return {
@@ -768,15 +783,15 @@ function actualizar() {
     const amp = document.getElementById('amperaje').value;
     const esp = document.getElementById('espesor').value;
     const res = document.getElementById('resultado');
-    
+
     if (!amp || !esp) {
         res.style.display = 'none';
         return;
     }
-    
+
     // Validar espesor vs cartucho
     const validacion = validarEspesor(amp, esp);
-    
+
     // Buscar parámetros
     if (tablaPlasma[amp]?.[esp]) {
         const p = tablaPlasma[amp][esp];
@@ -787,7 +802,7 @@ function actualizar() {
         document.getElementById('aire').innerText = p.aire;
         document.getElementById('delay').innerText = p.delay;
         res.style.display = 'grid';
-        
+
         // Mostrar advertencia si corresponde
         if (validacion && validacion.type !== 'ok') {
             toast(validacion.msg, validacion.type);
