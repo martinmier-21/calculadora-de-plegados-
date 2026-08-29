@@ -122,22 +122,7 @@
         .res-card .val { font-size: 22px; font-weight: 800; color: #ffac1c; }
         .res-card .val.kg { color: #55ff55; }
         .res-card .unit { font-size: 10px; color: #aaa; margin-left: 2px; }
-        .topes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .tope-col { background: rgba(255,255,255,0.05); border-radius: 7px; padding: 9px; }
-        .tope-col .title {
-            font-size: 9px; color: #ffac1c; text-align: center;
-            text-transform: uppercase; font-weight: 700;
-            margin-bottom: 7px; padding-bottom: 5px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .tope-item {
-            display: flex; justify-content: space-between; padding: 6px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 11px;
-        }
-        .tope-item:last-child { border-bottom: none; }
-        .tope-lbl { display: flex; align-items: center; gap: 4px; }
-        .tope-dot { width: 8px; height: 8px; border-radius: 50%; }
-        .tope-val { font-weight: 700; }
+        
         .toast {
             position: fixed; bottom: 18px; left: 50%;
             transform: translateX(-50%) translateY(100px);
@@ -203,7 +188,7 @@
 
         @media (max-width: 480px) {
             .selector { grid-template-columns: repeat(3,1fr); }
-            .inputs, .main-res, .topes { grid-template-columns: 1fr; }
+            .inputs, .main-res { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -290,16 +275,14 @@
                     <div class="val kg"><span id="resPeso">0</span><span class="unit">kg</span></div>
                 </div>
             </div>
-            <div class="topes">
-                <div class="tope-col">
-                    <div class="title">🔙 Desde Ala 1</div>
-                    <div id="topesIzq"></div>
-                </div>
-                <div class="tope-col">
-                    <div class="title">🔜 Desde Última</div>
-                    <div id="topesDer"></div>
-                </div>
+            
+            <!-- NUEVO: Descuento por plegado en lugar de topes -->
+            <div class="res-card" style="grid-column: 1 / -1; margin-top: 10px; background: rgba(255, 172, 28, 0.1); border: 1px solid rgba(255, 172, 28, 0.3);">
+                <div class="lbl">📉 DESCUENTO POR PLEGADO (90°)</div>
+                <div class="val" style="color: #ffac1c;"><span id="resDescuento">0</span><span class="unit">mm</span></div>
+                <div style="font-size: 10px; color: #aaa; margin-top: 4px;">Restar esta medida por cada plegado para que el lado quede a la medida correcta.</div>
             </div>
+
         </div>
 
         <button class="btn-plasma" id="btnIrPlasma">🔥 PARÁMETROS PLASMA</button>
@@ -539,7 +522,8 @@ function calcular() {
 
     const OSSB = (R + t) * Math.tan(ang / 2);
     const BA = ang * (R + NA);
-    const BD = (2 * OSSB) - BA;
+    const BD = (2 * OSSB) - BA; // Descuento por plegado (Bend Deduction)
+    
     let des = 0;
     for(const ala of alas) {
         des += ala;
@@ -551,34 +535,9 @@ function calcular() {
 
     document.getElementById('resDes').textContent = des.toFixed(2);
     document.getElementById('resPeso').textContent = peso.toFixed(3);
-
-    // --- Cálculo de Topes Corregido ---
-    const izq = document.getElementById('topesIzq');
-    const der = document.getElementById('topesDer');
-    izq.innerHTML = '';
-    der.innerHTML = '';
-
-    // Topes desde la primera ala (izquierda)
-    let posTopeIzq = 0;
-    for (let i = 0; i < plegados; i++) {
-        posTopeIzq += alas[i];
-        // El tope se coloca en la posición acumulada menos la mitad del ángulo de plegado (BD/2)
-        const val = posTopeIzq - BD / 2;
-        izq.innerHTML += '<div class="tope-item">' +
-            '<span class="tope-lbl"><span class="tope-dot" style="background:' + colors[i] + '"></span>P' + (i+1) + '</span>' +
-            '<span class="tope-val">' + val.toFixed(2) + ' mm</span></div>';
-    }
-
-    // Topes desde la última ala (derecha)
-    let posTopeDer = 0;
-    for (let i = plegados - 1; i >= 0; i--) {
-        posTopeDer += alas[i + 1]; // Sumamos la ala siguiente (hacia la derecha)
-        const val = posTopeDer - BD / 2;
-        const colIdx = i; // Color basado en el índice del plegado
-        der.innerHTML += '<div class="tope-item">' +
-            '<span class="tope-lbl"><span class="tope-dot" style="background:' + colors[colIdx] + '"></span>P' + (i+1) + '</span>' +
-            '<span class="tope-val">' + val.toFixed(2) + ' mm</span></div>';
-    }
+    
+    // --- Mostrar Descuento por Plegado ---
+    document.getElementById('resDescuento').textContent = BD.toFixed(2);
 
     document.getElementById('results').style.display = 'block';
     toast('✅ Calculado', 'ok');
@@ -695,8 +654,6 @@ function compartir() {
 }
 
 // ===== PLASMA - CONFIGURACIÓN EXPERTA =====
-
-// ✅ Límites de espesor por cartucho (rango recomendado)
 const cartuchoConfig = {
     "45": { min: 0.5, max: 6, name: "45A (FineCut)", optimal: true },
     "65": { min: 0.8, max: 10, name: "65A", optimal: true },
@@ -704,7 +661,6 @@ const cartuchoConfig = {
     "105": { min: 1.5, max: 25, name: "105A", optimal: true }
 };
 
-// ✅ Tabla de parámetros EXTENDIDA (incluye chapa fina en todos los cartuchos)
 const tablaPlasma = {
     "45": {
         "1.5": { amp: 45, vel: 6000, h_p: 3.8, h_c: 1.5, aire: 75, delay: 0.0 },
@@ -757,7 +713,6 @@ const tablaPlasma = {
     }
 };
 
-// ✅ Función de validación inteligente
 function validarEspesor(amp, espesor) {
     const config = cartuchoConfig[amp];
     if (!config) return null;
@@ -778,7 +733,6 @@ function validarEspesor(amp, espesor) {
     return { type: 'ok', msg: null };
 }
 
-// ✅ Función actualizar con validación
 function actualizar() {
     const amp = document.getElementById('amperaje').value;
     const esp = document.getElementById('espesor').value;
@@ -789,10 +743,8 @@ function actualizar() {
         return;
     }
 
-    // Validar espesor vs cartucho
     const validacion = validarEspesor(amp, esp);
 
-    // Buscar parámetros
     if (tablaPlasma[amp]?.[esp]) {
         const p = tablaPlasma[amp][esp];
         document.getElementById('amp').innerText = p.amp;
@@ -803,13 +755,11 @@ function actualizar() {
         document.getElementById('delay').innerText = p.delay;
         res.style.display = 'grid';
 
-        // Mostrar advertencia si corresponde
         if (validacion && validacion.type !== 'ok') {
             toast(validacion.msg, validacion.type);
         }
     } else {
         res.style.display = 'none';
-        // Si no hay parámetros pero el espesor es válido, mostrar mensaje
         if (validacion && validacion.type === 'err') {
             toast(validacion.msg, 'err');
         } else if (!tablaPlasma[amp]?.[esp]) {
