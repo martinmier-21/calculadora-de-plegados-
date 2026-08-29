@@ -202,7 +202,7 @@
     </div>
 
     <div class="content">
-        <div class="section">📐 PLEGADOS</div>
+        <div class="section"> PLEGADOS</div>
         <div class="selector" id="selPlegados">
             <button class="sel-btn" data-n="1">1P</button>
             <button class="sel-btn" data-n="2">2P</button>
@@ -225,11 +225,11 @@
         <div class="section">⚙️ CONFIG</div>
         <div class="inputs">
             <div class="inp-group">
-                <label class="inp-label">📊 ESPESOR</label>
+                <label class="inp-label"> ESPESOR</label>
                 <input type="number" id="tEspesor" class="inp accent" value="6" min="0.5" max="25" step="0.1">
             </div>
             <div class="inp-group">
-                <label class="inp-label">🔺 MATRIZ V</label>
+                <label class="inp-label"> MATRIZ V</label>
                 <input type="number" id="matrizV" class="inp" value="40" min="10" max="200">
             </div>
         </div>
@@ -276,11 +276,15 @@
                 </div>
             </div>
             
-            <!-- NUEVO: Descuento por plegado en lugar de topes -->
-            <div class="res-card" style="grid-column: 1 / -1; margin-top: 10px; background: rgba(255, 172, 28, 0.1); border: 1px solid rgba(255, 172, 28, 0.3);">
-                <div class="lbl">📉 DESCUENTO POR PLEGADO (90°)</div>
-                <div class="val" style="color: #ffac1c;"><span id="resDescuento">0</span><span class="unit">mm</span></div>
-                <div style="font-size: 10px; color: #aaa; margin-top: 4px;">Restar esta medida por cada plegado para que el lado quede a la medida correcta.</div>
+            <!-- Calculadora de Tope -->
+            <div class="res-card" style="grid-column: 1 / -1; margin-top: 10px; background: rgba(85, 255, 85, 0.1); border: 1px solid rgba(85, 255, 85, 0.3);">
+                <div class="lbl">🎯 MEDIDA FINAL DEL ALA</div>
+                <input type="number" id="medidaFinalAla" class="inp" placeholder="Ej: 100" style="margin-bottom: 10px; border-color: #55ff55;" oninput="calcularTope()">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(85,255,85,0.15); border-radius: 8px; border: 2px solid #55ff55;">
+                    <span style="font-size: 12px; color: #55ff55; font-weight: 700;">PONER TOPE A:</span>
+                    <span style="font-size: 24px; font-weight: 800; color: #55ff55;"><span id="resTope">0</span> <span class="unit">mm</span></span>
+                </div>
             </div>
 
         </div>
@@ -297,7 +301,6 @@
             <h2 style="text-align: center; color: #ffac1c; margin-top: 0; margin-bottom: 5px; text-transform: uppercase; font-size: 18px;">CNC PLASMA PARÁMETROS</h2>
             <h3 style="text-align: center; color: #888; margin-top: 0; margin-bottom: 15px; font-size: 12px; letter-spacing: 2px;">POWERMAX SYNC</h3>
 
-            <!-- SELECTOR DE AMPERAJE -->
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-size: 11px; margin-bottom: 8px; color: #aaa; text-transform: uppercase; text-align: center;">Cartucho / Amperaje</label>
                 <select id="amperaje" onchange="actualizar()" style="width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #444; background: #121212; color: #ffac1c; font-size: 16px; font-weight: bold; text-align: center; outline: none; cursor: pointer;">
@@ -515,14 +518,13 @@ function calcular() {
 
     if(t <= 0 || alas.every(a => a <= 0)) { toast('⚠️ Ingresa valores válidos para las alas y espesor', 'err'); return; }
 
-    // --- Cálculo del Desarrollo ---
-    const R = t; // Radio de plegado asumido como espesor
-    const NA = t * K; // Neutro del Acero
-    const ang = Math.PI / 2; // Ángulo de plegado (90 grados en radianes)
+    const R = t;
+    const NA = t * K;
+    const ang = Math.PI / 2;
 
     const OSSB = (R + t) * Math.tan(ang / 2);
     const BA = ang * (R + NA);
-    const BD = (2 * OSSB) - BA; // Descuento por plegado (Bend Deduction)
+    const BD = (2 * OSSB) - BA;
     
     let des = 0;
     for(const ala of alas) {
@@ -530,17 +532,37 @@ function calcular() {
     }
     des -= plegados * BD;
 
-    // --- Cálculo del Peso ---
     const peso = (des * largo * t * dens) / 1000000;
 
     document.getElementById('resDes').textContent = des.toFixed(2);
     document.getElementById('resPeso').textContent = peso.toFixed(3);
-    
-    // --- Mostrar Descuento por Plegado ---
-    document.getElementById('resDescuento').textContent = BD.toFixed(2);
 
     document.getElementById('results').style.display = 'block';
     toast('✅ Calculado', 'ok');
+}
+
+// ===== FUNCIÓN: CALCULAR TOPE =====
+function calcularTope() {
+    const medidaFinal = parseFloat(document.getElementById('medidaFinalAla').value);
+    if (isNaN(medidaFinal)) {
+        document.getElementById('resTope').textContent = '0';
+        return;
+    }
+    
+    const t = parseFloat(document.getElementById('tEspesor').value) || 0;
+    const K = parseFloat(document.getElementById('factorK').value) || 0.448;
+    const R = t; 
+    const ang = Math.PI / 2;
+    
+    const OSSB = (R + t) * Math.tan(ang / 2);
+    const NA = t * K;
+    const BA = ang * (R + NA);
+    const BD = (2 * OSSB) - BA;
+    
+    // Fórmula: Tope = Medida Final - BD/2
+    const tope = medidaFinal - (BD / 2);
+    
+    document.getElementById('resTope').textContent = tope.toFixed(2);
 }
 
 // ===== FUNCIONES DE PRESETS =====
@@ -621,7 +643,7 @@ function borrarPreset(nom) {
 
 function toast(msg, tipo) {
     const t = document.getElementById('toast');
-    document.getElementById('toastIcon').textContent = tipo === 'ok' ? '✓' : (tipo === 'err' ? '⚠️' : '⚡');
+    document.getElementById('toastIcon').textContent = tipo === 'ok' ? '✓' : (tipo === 'err' ? '️' : '⚡');
     document.getElementById('toastMsg').textContent = msg;
     t.className = 'toast ' + tipo + ' show';
     setTimeout(function() { t.classList.remove('show'); }, 3500);
@@ -636,10 +658,10 @@ function copiar() {
     const k = document.getElementById('factorK').value;
     const txt = 'Topes Pro - Resultados\nMaterial: ' + mat + ' (K:' + k + ')\nDesarrollo: ' + des + 'mm\nPeso: ' + peso + 'kg';
     if(navigator.clipboard) {
-        navigator.clipboard.writeText(txt).then(() => toast('📋 Copiado', 'ok')).catch(() => toast('❌ Error', 'err'));
+        navigator.clipboard.writeText(txt).then(() => toast('📋 Copiado', 'ok')).catch(() => toast(' Error', 'err'));
     } else {
         const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta);
-        ta.select(); try { document.execCommand('copy'); toast('📋 Copiado', 'ok'); } catch(e) { toast('❌ Error', 'err'); }
+        ta.select(); try { document.execCommand('copy'); toast('📋 Copiado', 'ok'); } catch(e) { toast(' Error', 'err'); }
         document.body.removeChild(ta);
     }
 }
